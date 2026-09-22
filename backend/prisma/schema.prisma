@@ -1,0 +1,204 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password      String
+  fullName      String
+  role          Role
+  department    Department?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  storeEntries     StoreEntry[]
+  departmentStocks DepartmentStock[]
+  distributions    Distribution[]
+  usageLogs        UsageLog[]
+  editLogs         EditLog[]
+}
+
+enum Role {
+  SUPER_ADMIN
+  STORE_ADMIN
+  DEPT_ADMIN_COMPUTER
+  DEPT_ADMIN_CIVIL
+  DEPT_ADMIN_ELECTRICAL
+  DEPT_ADMIN_ELECTRONICS
+  DEPT_ADMIN_MECHANICAL
+}
+
+enum Department {
+  STORE
+  COMPUTER_ENGINEERING
+  CIVIL_ENGINEERING
+  ELECTRICAL_ENGINEERING
+  ELECTRONICS_TELECOMMUNICATION
+  MECHANICAL_ENGINEERING
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  items       Item[]
+}
+
+model Item {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  category        Category @relation(fields: [categoryId], references: [id])
+  categoryId      String
+  unit            String   // pieces, boxes, kg, liters, etc.
+  minStockLevel   Int      @default(10)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  storeStock      StoreStock?
+  departmentStocks DepartmentStock[]
+  storeEntries    StoreEntry[]
+  distributions   Distribution[]
+  usageLogs       UsageLog[]
+
+  @@unique([name, categoryId])
+}
+
+model StoreStock {
+  id                String   @id @default(uuid())
+  item              Item     @relation(fields: [itemId], references: [id])
+  itemId            String   @unique
+  quantity          Int      @default(0)
+  lastUpdated       DateTime @updatedAt
+
+  @@index([itemId])
+}
+
+model StoreEntry {
+  id              String   @id @default(uuid())
+  item            Item     @relation(fields: [itemId], references: [id])
+  itemId          String
+  quantity        Int
+  billNumber      String
+  billDate        DateTime
+  billAmount      Decimal  @db.Decimal(10, 2)
+  vendorName      String
+  vendorContact   String?
+  billImageUrl    String?  // URL to uploaded bill image
+  remarks         String?
+  addedBy         User     @relation(fields: [addedById], references: [id])
+  addedById       String
+  createdAt       DateTime @default(now())
+
+  editLogs        EditLog[]
+
+  @@index([itemId, billDate])
+}
+
+model DepartmentStock {
+  id                String     @id @default(uuid())
+  item              Item       @relation(fields: [itemId], references: [id])
+  itemId            String
+  department        Department
+  quantity          Int        @default(0)
+  lastUpdated       DateTime   @updatedAt
+  managedBy         User?      @relation(fields: [managedById], references: [id])
+  managedById       String?
+
+  @@unique([itemId, department])
+  @@index([department])
+}
+
+model Distribution {
+  id              String     @id @default(uuid())
+  item            Item       @relation(fields: [itemId], references: [id])
+  itemId          String
+  fromStore       Boolean    @default(true) // true = from store, false = internal transfer
+  toDepartment    Department
+  quantity        Int        // Quantity sent from store
+  receivedQuantity Int?      // Quantity actually received by department
+  isConfirmed     Boolean    @default(false) // Department confirmed receipt
+  confirmedAt     DateTime?
+  confirmedBy     String?    // User ID who confirmed
+  distributedBy   User       @relation(fields: [distributedById], references: [id])
+  distributedById String
+  receivedDate    DateTime   @default(now())
+  remarks         String?
+  createdAt       DateTime   @default(now())
+
+  editLogs        EditLog[]
+
+  @@index([toDepartment, receivedDate])
+  @@index([isConfirmed])
+}
+
+enum UsageCategory {
+  TEACHING_CLASSROOM
+  LAB_EXPERIMENT
+  STUDENT_DISTRIBUTION
+  ADMINISTRATIVE
+  MAINTENANCE_REPAIRS
+  EVENTS_ACTIVITIES
+  OTHER
+}
+
+model UsageLog {
+  id              String        @id @default(uuid())
+  item            Item          @relation(fields: [itemId], references: [id])
+  itemId          String
+  department      Department
+  quantityUsed    Int
+  usageDate       DateTime
+  category        UsageCategory @default(OTHER)
+  purpose         String        // Detailed description (min 10 characters)
+  attachmentUrl   String?       // Optional photo/document URL
+  usedBy          User          @relation(fields: [usedById], references: [id])
+  usedById        String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  editLogs        EditLog[]
+
+  @@index([department, usageDate])
+  @@index([category])
+  @@index([usageDate])
+}
+
+model EditLog {
+  id              String   @id @default(uuid())
+  entityType      String   // StoreEntry, Distribution, UsageLog, DepartmentStock, etc.
+  entityId        String
+  fieldName       String
+  oldValue        String?
+  newValue        String?
+  editedBy        User     @relation(fields: [editedById], references: [id])
+  editedById      String
+  editedAt        DateTime @default(now())
+  reason          String   // Required reason for edit (min 20 characters)
+
+  // Polymorphic relations (optional foreign keys)
+  storeEntry      StoreEntry?    @relation(fields: [storeEntryId], references: [id])
+  storeEntryId    String?
+  distribution    Distribution?  @relation(fields: [distributionId], references: [id])
+  distributionId  String?
+  usageLog        UsageLog?      @relation(fields: [usageLogId], references: [id])
+  usageLogId      String?
+
+  @@index([entityType, entityId])
+  @@index([editedAt])
+  @@index([editedById])
+}
+
