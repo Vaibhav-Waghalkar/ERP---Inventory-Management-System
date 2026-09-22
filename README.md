@@ -36,6 +36,38 @@ A full-stack **Enterprise Resource Planning (ERP)** system for managing institut
 
 ---
 
+## 📸 Application Screenshots
+
+### 01. Authentication & Sign In
+Secure role-based login portal with validation and error handling.
+![01 - Sign In Page](./Images/01.png)
+
+### 02. Super Admin Dashboard
+Central executive dashboard displaying inventory KPIs, low stock alerts, and quick action shortcuts.
+![02 - Super Admin Dashboard](./Images/02.png)
+
+### 03. Store Management — Add Stock Entry
+Form to register new stock receipts with vendor details, bill metadata, and invoice document uploads.
+![03 - Add Stock Entry](./Images/03.png)
+
+### 04. Audit Trail
+Comprehensive tamper-evident log capturing all system modifications, field changes, and audit reasons.
+![04 - Audit Trail](./Images/04.png)
+
+### 05. Account & System Settings
+User preference management including profile updates, password change, and notification settings.
+![05 - Settings](./Images/05.png)
+
+### 06. User Management
+Administrator panel to invite users, assign department roles, and toggle account activation status.
+![06 - User Management](./Images/06.png)
+
+### 07. Verification Center
+Stock reconciliation console to audit and ensure consistency between central store records and departmental stocks.
+![07 - Verification Center](./Images/07.png)
+
+---
+
 ## 🏗️ Tech Stack
 
 | Layer        | Technology                                                           |
@@ -369,4 +401,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](./LICEN
 
 **Vaibhav Waghalkar**
 
-- GitHub: [@Vaibhav-Waghalkar](https://github.com/Vaibhav-Waghalkar)
+- 📧 Email: [vaibhavwaghalkar@gmail.com](mailto:vaibhavwaghalkar@gmail.com)
+- 🌐 Portfolio: [https://dev-vaibhav-ai.co.in/](https://dev-vaibhav-ai.co.in/)
+- 💼 LinkedIn: [Vaibhav Waghalkar](https://www.linkedin.com/in/vaibhav-waghalkar/)
+- 🐙 GitHub: [@Vaibhav-Waghalkar](https://github.com/Vaibhav-Waghalkar)
